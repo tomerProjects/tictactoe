@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <style>
+        
+
+
+
+    body{background-color:azure;}
+    body *{
+        position: sticky;
+    }
+    h1{
+font-size: 50px;    }
+    .p1{background-color: azure;
+    }
+    .p1::before {
+  content: "X";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3em;
+  font-weight: bold;
+}
+.p2::before {
+  content: "O";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3em;
+  font-weight: bold;
+}
+
+    .p2{background-color: azure;}
+    td{width:100px;height: 100px;border: 1px solid black;}
+    #end{width: 55%; height: 370px;background-color:aqua;color: black;display: none ;border: 3px; border-color: black;border-style: solid;border-radius: 5px;}
+    button{
+        background-color:#ee2244;
+        border-radius: 5px;
+        width: 100px;
+        height: 50px;
+
+    }
+    button text{
+text-size-adjust: 100px;
+    }
+    </style> 
+</head>
+<body>
+<center>
+    <h1>player <%= player %> </h1>
+    <br>
+<div id="end">
+
+</div>
+<table id="brd" >
+<tr>
+    <td id="c1" onclick="sendMove(1)"></td>
+    <td id="c2" onclick="sendMove(2)"></td>
+    <td id="c3" onclick="sendMove(3)"></td>
+</tr>
+<tr>
+    <td id="c4" onclick="sendMove(4)"></td>
+    <td id="c5" onclick="sendMove(5)"></td>
+    <td id="c6" onclick="sendMove(6)"></td>
+</tr>
+<tr>
+    <td id="c7" onclick="sendMove(7)"></td>
+    <td id="c8" onclick="sendMove(8)"></td>
+    <td id="c9" onclick="sendMove(9)"></td>
+</tr>
+</table>
+</center>
+<script>
+    
+var player=<%= player %>;
+function setP1(num){
+    document.getElementById("c"+num).classList.add("p1");
+}
+function setP2(num){
+    document.getElementById("c"+num).classList.add("p2");
+}
+function updateData(data){
+    console.log(data);
+    if(data.GameStatus=="on"){
+        if(data.player==1
+){
+            setP1(data.cell);
+        } else {
+            setP2(data.cell);
+        }
+    }
+    else if(data.GameStatus=="over"){
+        document.getElementById("end").innerHTML=`
+    <h1>Game Finished</h1>
+   <p >player ${data.player} won the game</p>
+   <br>
+   <p id ="endtext"> </p>
+   <br>
+
+   
+   <p id ="playerwon"> </p>
+   <br>
+   <button onclick="restart()">play again</button>
+
+    `
+    if(player === data.player)
+    {    
+        document.getElementById("playerwon").innerHTML=`
+        you won congratulations
+        `
+}
+else{
+    document.getElementById("playerwon").innerHTML=`
+        you lost better luck next time
+        `
+}
+    document.getElementById("endtext").classList.add("p"+data.player);
+    GameOver();
+
+}
+
+
+    }
+
+// function updateGameOver(data){
+//     document.getElementById("end").innerHTML=`
+//     Game Finished
+//     the player who won was ${data.player}
+    
+//     `
+// }
+async function restart(){
+    let response = await fetch(`/restart`);
+    restartboard();
+    Gamerestart();
+}
+function restartboard(){
+    for (let i = 1; i<=9 ;i++) {
+        document.getElementById("c"+i).className='';
+    }
+
+}
+function Gamerestart(){
+    document.getElementById("brd").style.display="inline";
+    document.getElementById("end").style.display="none";
+}
+function GameOver(){
+    document.getElementById("brd").style.display="none";
+    document.getElementById("end").style.display="block";
+}
+async function sendMove(cell){
+    if(document.getElementById("c"+cell).className == ''){
+    let response = await fetch(`/GetMove/${player}/${cell}`);
+    let data = await response.json();
+    updateData(data);
+    }
+}
+async function fetchText() {
+    let response = await fetch('/GetLast');
+    let data = await response.json();
+    updateData(data);
+    updateGameOver(data);
+}
+setInterval(fetchText,500);
+</script>
+</body>
+</html>
